@@ -1,0 +1,37 @@
+# 模拟进程调度执行
+> 要求和假设
+
+* 假设进程的状态分为**执行**和**就绪**两种
+* 每个进程以其PCB为代表
+* 以**链表**的方式组织，分为三个队列`freeQueue` `readyQueue` `runningQueue`
+* 进程的调度采用**随机**的方式
+
+> 操作流程
+
+1. 输入进程数量以及每个进程需要的运行的时间
+2. 从`freeQueue`中取出节点，插入`readyQueue`来创建进程
+3. 随机地从`readyQueue`选择一个节点，插入`runningQueue`的队尾来进入运行状态
+4. 若`runningQueue`中有2个节点，则将第一个节点的剩余运行时间减2，若结果大于0，将其插入`readyQueue`队尾，若结果小于等于0，将其插入`freeQueue`队尾
+5. 打印信息示例
+6. 重复3~6直至`readyQueue`为空
+
+
+>思路描述
+
+1. 定义一个`PCB`的结构体，包含各种程序运行的信息
+2. 为PCB编写减少剩余运行时间的函数`run`
+3. 定义一个`Queue`的结构体来管理各种队列，包含成员`phead` `ptail` `num`
+4. 为`Queue`编写各种操作函数，包括`append` `isEmpty` `isSingle` `popFirst` `popRandom` `print`
+5. 编写`printInfo`来打印信息示例
+6. 按照操作流程的步骤调用已写好的函数完成程序
+
+
+>问题说明
+
+
+
+>体会
+
+
+
+>注意
