@@ -8,7 +8,7 @@
 
 > 操作流程
 
-1. 输入进程数量以及每个进程需要的运行的时间
+1. 输入进程数量以及每个进程需要的运行的时间,在`freeQueue`中生成节点
 2. 从`freeQueue`中取出节点，插入`readyQueue`来创建进程
 3. 随机地从`readyQueue`选择一个节点，插入`runningQueue`的队尾来进入运行状态
 4. 若`runningQueue`中有2个节点，则将第一个节点的剩余运行时间减2，若结果大于0，将其插入`readyQueue`队尾，若结果小于等于0，将其插入`freeQueue`队尾
@@ -19,19 +19,33 @@
 >思路描述
 
 1. 定义一个`PCB`的结构体，包含各种程序运行的信息
-2. 为PCB编写减少剩余运行时间的函数`run`
-3. 定义一个`Queue`的结构体来管理各种队列，包含成员`phead` `ptail` `num`
-4. 为`Queue`编写各种操作函数，包括`append` `isEmpty` `isSingle` `popFirst` `popRandom` `print`
+2. 定义一个`Queue`的结构体来管理各种队列，包含成员`phead` `ptail` `num`
+3. 为PCB编写各种操作函数，包括`run` `printPCB` `createPCB`
+4. 为`Queue`编写各种操作函数，包括`append` `isEmpty` `isSingle` `popFirst` `popRandom` `printQueue` `iniQueue`
 5. 编写`printInfo`来打印信息示例
 6. 按照操作流程的步骤调用已写好的函数完成程序
 
 
 >问题说明
 
-
+1. 声明的结构体使用时忘加struct
 
 >体会
 
 
 
->注意
+> 查阅资料
+
+1. 下载了kernel 4.7.5,并找出task_structd的定义
+```
+struct task_struct {
+	u64 curr_chain_key;
+	int lockdep_depth;
+	unsigned int lockdep_recursion;
+	struct held_lock held_locks[MAX_LOCK_DEPTH];
+	gfp_t lockdep_reclaim_gfp;
+	int pid;
+	char comm[17];
+};
+```
+2.
