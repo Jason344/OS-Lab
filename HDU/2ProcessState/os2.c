@@ -6,11 +6,11 @@
 #define ts 2 /* time slice */
 
 struct PCB {
-    int pid;    
-    int pstate;  
-    char pname[20]; 
-    int ptime;   
-    struct PCB *pnext; 
+    int pid;
+    int pstate;
+    char pname[20];
+    int ptime;
+    struct PCB *pnext;
 };
 struct Queue{
 	struct PCB* phead;
@@ -26,7 +26,7 @@ void createPCB(int);
 //void iniQueue(struct Queue*);
 int main(){
 //	struct Queue freeQueue,readyQueue,runningQueue;
-	
+
 //	iniQueue(&freeQueue);
 //	iniQueue(&readyQueue);
 //	iniQueue(&runningQueue);
@@ -48,7 +48,7 @@ void createPCB(int time){
 	printPCB(newPCB);
 //	append(queue,newPCB);
 }
-//run pcb and decline time 
+//run pcb and decline time
 int run(struct PCB* pcb){
 	pcb->ptime -=2;
 	return pcb->ptime;
@@ -73,10 +73,10 @@ void append(struct Queue* queue,struct PCB* pcb){
 	}
 	queue->num++;
 }
-//print queue from front to the end 
+//print queue from front to the end
 void printQueue(struct Queue* queue){
 	struct PCB* p = queue->phead;
-	
+
 	while(p != NULL){
 		printf("P%d\t",p->pid);
 		p = p->pnext;
