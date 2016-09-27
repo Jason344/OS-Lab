@@ -51,18 +51,19 @@ int main(){
 	iniQueue(&freeQueue);
 	iniQueue(&readyQueue);
 	iniQueue(&runningQueue);
-	createProcess(&freeQueue,&readyQueue,31);
-	createProcess(&freeQueue,&readyQueue,22);
-	createProcess(&freeQueue,&readyQueue,52);
-	createProcess(&freeQueue,&readyQueue,12);
-	createProcess(&freeQueue,&readyQueue,22);
-	createProcess(&freeQueue,&readyQueue,41);
-	createProcess(&freeQueue,&readyQueue,12);
+	createProcess(&freeQueue,&readyQueue,10);
+	createProcess(&freeQueue,&readyQueue,20);
+	createProcess(&freeQueue,&readyQueue,20);
+	createProcess(&freeQueue,&readyQueue,11);
 	createProcess(&freeQueue,&readyQueue,21);
+	createProcess(&freeQueue,&readyQueue,43);
+	createProcess(&freeQueue,&readyQueue,14);
+	createProcess(&freeQueue,&readyQueue,26);
 	
 	while(!isEmpty(&runningQueue)||!isEmpty(&readyQueue)){
 		printf("*******************\n");
 		runAnother(&freeQueue,&readyQueue,&runningQueue);
+/* 
 		printf("\n\nfree:");
 		printQueue(&freeQueue);
 		printf("\nready:");
@@ -70,6 +71,7 @@ int main(){
 		printf("\nrunning:");
 		printQueue(&runningQueue);
 		printf("\n\n");
+		*/
 		printf("*******************\n");
 	}
 }
@@ -111,12 +113,12 @@ void append(struct Queue* queue,struct PCB* pcb){
 			queue->phead = pcb;
 			queue->ptail = pcb;
 			pcb->pnext = NULL;
-		queue->num++;
+			queue->num++;
 		}else{
 			pcb->pnext = NULL;
 			queue->ptail->pnext = pcb;
 			queue->ptail = pcb;
-		queue->num++;
+			queue->num++;
 		}
 	}
 }
@@ -132,7 +134,6 @@ void printQueue(struct Queue* queue){
 			printf("P%d\t",p->pid);
 			p = p->pnext;
 		}
-		printf("\t%d",queue->num);
 	}
 }
 //init Queue with some default value
@@ -199,6 +200,8 @@ struct PCB* popRandom(struct Queue* queue){
 		}
 		result = p->pnext;
 		p->pnext = result->pnext;
+		if(p->pnext==NULL)
+			queue->ptail = p;
 		return result;
 	}
 }
@@ -221,7 +224,7 @@ void createProcess(struct Queue* freeQueue,struct Queue* readyQueue,int time){
 		pcb = popFirst(freeQueue);
 		changeState(pcb,ready);
 		changeId(pcb,cnt++);
-		append(readyQueue,pcb);//´ËÐÐ´úÂë´ý²âÊÔ 
+		append(readyQueue,pcb);
 	}
 }
 //figure out whether the time is enough
@@ -268,11 +271,11 @@ void printInfo(struct Queue* freeQueue,struct Queue* readyQueue,struct Queue* ru
 }
 //change the running process
 void runAnother(struct Queue* freeQueue,struct Queue* readyQueue,struct Queue* runningQueue){
-	struct PCB* toRun = popFirst(readyQueue); 
+	struct PCB* toRun = popRandom(readyQueue); 
 	struct PCB* ran = NULL;
 	bool time = isTimeEnough(runningQueue);
 	
-	printPCB(toRun);
+
 	if(isEmpty(readyQueue)&&isEmpty(runningQueue)){
 		printf("nothing to run");
 	}else if(isEmpty(readyQueue)&&isSingle(runningQueue)){
@@ -297,7 +300,7 @@ void runAnother(struct Queue* freeQueue,struct Queue* readyQueue,struct Queue* r
 				append(freeQueue,ran);
 			}else{
 				changeState(ran,ready);
-				append(readyQueue,ran); 
+				append(readyQueue,ran);
 			}
 		}
 	}

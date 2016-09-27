@@ -48,8 +48,12 @@ int r = rand();
 5. `runAnother`中的逻辑有待改善
 6. 一个很纠结的问题是，当`readyQueue`为空，`runnningQueue`中有一个元素时，我们如何去判断，那个节点是上次已经运行了的，还是新加入的。我的解决方案是，在`printInfo`之前，不要修改每个节点的`state`值，这样就可以用来帮助我们判断实际的情况。
 7. 声明了一个全局变量`cnt`来生成进程id，这有缺陷。
-8. append无法把running中的进程移到ready
-
+8. `popRandom`的时候，弹出最后一个元素时，忘了修改ptail的值，导致后来append节时，许多节点无故丢失，好几个小时才找出了这个bug，实在是不容易
+```
+		if(p->pnext==NULL)
+			queue->ptail = p;
+```
+9. 输出格式就不在意了，这个也不是关键
 >体会
 
 
