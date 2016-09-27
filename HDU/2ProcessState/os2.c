@@ -8,6 +8,8 @@
 #define ts 2 /* time slice */
 #define false 0
 #define true 1
+#define enough 1
+#define lack 0
 struct PCB {
     int pid;
     int pstate;
@@ -23,15 +25,24 @@ struct Queue{
 typedef int bool;
 int run(struct PCB*);
 void printPCB(struct PCB*);
-void createPCB(struct Queue*,int);
+struct PCB* createPCB(int);
+void changeState(struct PCB*,int);
+void changeId(struct PCB*,int);
 void append(struct Queue*,struct PCB*);
 void printQueue(struct Queue*);
 void iniQueue(struct Queue*);
 bool isEmpty(struct Queue*);
 bool isSingle(struct Queue*);
+struct PCB* getFirst(struct Queue*);
+struct PCB* getLast(struct Queue*);
 struct PCB* popFirst(struct Queue*);
 struct PCB* popRandom(struct Queue*);
 int getRandomNum();
+void createProcess(struct Queue*,struct Queue*,int time);
+void printInfo(struct Queue*,struct Queue*,struct Queue*);
+bool isTimeEnough(struct Queue*);
+void runAnother(struct Queue*,struct Queue*,struct Queue*);
+int cnt = 0;
 int main(){
 	struct Queue freeQueue,readyQueue,runningQueue;
 	struct PCB* p;
@@ -40,40 +51,40 @@ int main(){
 	iniQueue(&freeQueue);
 	iniQueue(&readyQueue);
 	iniQueue(&runningQueue);
-	createPCB(&freeQueue,3);
-	createPCB(&freeQueue,2);
-	createPCB(&freeQueue,5);
-	createPCB(&freeQueue,1);
-	createPCB(&freeQueue,2);
-	createPCB(&freeQueue,3);
-	createPCB(&freeQueue,4);
-	createPCB(&freeQueue,12);
-	createPCB(&freeQueue,11);
-	createPCB(&freeQueue,9);
-	createPCB(&freeQueue,8);
-	for(i=0;i<15;i++){
-		if((p=popRandom(&freeQueue))!=NULL){
-			printf("P%d\n",p->pid);
-		}else{
-			printf("empty!\n");
-		}	
+	createProcess(&freeQueue,&readyQueue,31);
+	createProcess(&freeQueue,&readyQueue,22);
+	createProcess(&freeQueue,&readyQueue,52);
+	createProcess(&freeQueue,&readyQueue,12);
+	createProcess(&freeQueue,&readyQueue,22);
+	createProcess(&freeQueue,&readyQueue,41);
+	createProcess(&freeQueue,&readyQueue,12);
+	createProcess(&freeQueue,&readyQueue,21);
+	
+	while(!isEmpty(&runningQueue)||!isEmpty(&readyQueue)){
+		printf("*******************\n");
+		runAnother(&freeQueue,&readyQueue,&runningQueue);
+		printf("\n\nfree:");
+		printQueue(&freeQueue);
+		printf("\nready:");
+		printQueue(&readyQueue);
+		printf("\nrunning:");
+		printQueue(&runningQueue);
+		printf("\n\n");
+		printf("*******************\n");
 	}
-	
-	
 }
 
 //create PCB with given time,and append to freeQueue
-//后期要修改直接中freeQueue中取 
-void createPCB(struct Queue* queue,int time){
-	static int cnt = 0;
+struct PCB* createPCB(int time){
 	struct PCB* newPCB = (struct PCB*)malloc(sizeof(struct PCB));
+	
 	newPCB->pid = cnt++;
-	newPCB->pstate = free;
+	newPCB->pstate = ready;
 	strcpy(newPCB->pname,"Unknow");
 	newPCB->ptime = time;
 	newPCB->pnext = NULL;
 	printPCB(newPCB);
-	append(queue,newPCB);
+	return newPCB;
 }
 //run pcb and decline time
 int run(struct PCB* pcb){
@@ -82,22 +93,32 @@ int run(struct PCB* pcb){
 }
 //print PCB
 void printPCB(struct PCB* pcb){
-	printf("id:%d\tstate:%d\tname:%s\ttime:%d\n",pcb->pid,pcb->pstate,pcb->pname,pcb->ptime);
+	if(pcb!=NULL)
+		printf("id:%d\tstate:%d\tname:%s\ttime:%d\n",pcb->pid,pcb->pstate,pcb->pname,pcb->ptime);
 }
-
+//change the state of PCB
+void changeState(struct PCB* pcb,int state){
+	pcb->pstate = state;
+}
+void changeId(struct PCB* pcb ,int id){
+	pcb->pid = id;
+}
 
 //append something to the queue
 void append(struct Queue* queue,struct PCB* pcb){
-	if(queue->phead==NULL){
-		queue->phead = pcb;
-		queue->ptail = pcb;
-		pcb->pnext = NULL;
-	}else{
-		pcb->pnext = NULL;
-		queue->ptail->pnext = pcb;
-		queue->ptail = pcb;
+	if(pcb != NULL){
+		if(queue->phead==NULL){
+			queue->phead = pcb;
+			queue->ptail = pcb;
+			pcb->pnext = NULL;
+		queue->num++;
+		}else{
+			pcb->pnext = NULL;
+			queue->ptail->pnext = pcb;
+			queue->ptail = pcb;
+		queue->num++;
+		}
 	}
-	queue->num++;
 }
 //print queue from front to the end
 //输出格式有待优化 
@@ -105,13 +126,13 @@ void printQueue(struct Queue* queue){
 	struct PCB* p = queue->phead;
 
 	if(isEmpty(queue)){
-		printf("It's empty\n");
+		printf("It's empty");
 	}else{
 		while(p != NULL){
 			printf("P%d\t",p->pid);
 			p = p->pnext;
 		}
-		printf("\n");	
+		printf("\t%d",queue->num);
 	}
 }
 //init Queue with some default value
@@ -134,7 +155,14 @@ bool isSingle(struct Queue* queue){
 		return true;
 	else return false;
 }
-
+//get the first element of the queue without delete it
+struct PCB* getFirst(struct Queue* queue){
+	return queue->phead;
+}
+//get the last element of the queue without delete it
+struct PCB* getLast(struct Queue* queue){
+	return queue->ptail;
+}
 //pop the first element of the queue
 struct PCB* popFirst(struct Queue* queue){
 	struct PCB* result = NULL;
@@ -156,7 +184,7 @@ struct PCB* popFirst(struct Queue* queue){
 struct PCB* popRandom(struct Queue* queue){
 	int n = queue->num;
 	int r = (getRandomNum())%(n>0?n:1);
-	int cnt = 0,i = 0;
+	int i = 0;
 	struct PCB* result = NULL;
 	struct PCB* p = NULL;
 	if(isEmpty(queue)){
@@ -166,7 +194,7 @@ struct PCB* popRandom(struct Queue* queue){
 	}else{
 		queue->num--;
 		p = queue->phead;
-		for(i=1;i<cnt;i++){
+		for(i=1;i<r;i++){
 			p = p->pnext;
 		}
 		result = p->pnext;
@@ -183,4 +211,94 @@ int getRandomNum(){
 	else srand(pre);
 	pre = rand();
    	return pre;
+}
+//create process 
+void createProcess(struct Queue* freeQueue,struct Queue* readyQueue,int time){
+	struct PCB* pcb= NULL;
+	if(isEmpty(freeQueue)){
+		append(readyQueue,createPCB(time));
+	}else{
+		pcb = popFirst(freeQueue);
+		changeState(pcb,ready);
+		changeId(pcb,cnt++);
+		append(readyQueue,pcb);//此行代码待测试 
+	}
+}
+//figure out whether the time is enough
+bool isTimeEnough(struct Queue* runnningQueue){
+	struct PCB* ran = getFirst(runnningQueue);
+	
+	if(ran!=NULL){
+		if(ran->ptime-2>0){
+			return lack;
+		}else return enough;
+	}else return -1;
+}
+//print infomation when runningQueue have two element
+void printInfo(struct Queue* freeQueue,struct Queue* readyQueue,struct Queue* runningQueue){
+	struct PCB* ran = getFirst(runningQueue);
+	struct PCB* run = getLast(runningQueue);
+	bool time = isTimeEnough(runningQueue);
+	if(isSingle(runningQueue)){
+		if(ran->pstate == ready){
+			printf("Sched: P%d(Ready -> Running)\n",run->pid);
+		}
+		else {
+			printf("run again\n");
+			printf("Sched: P%d(Running -> Running)\n",run->pid);
+		}
+		printf("Running: P%d\n",run->pid);
+		printf("Ready: ");
+		printQueue(readyQueue);
+		printf("\n");
+		
+	}else if(time == enough){
+		printf("Sched: P%d(Running -> Free), P%d(Ready -> Running)\n",ran->pid,run->pid);
+		printf("Running: P%d\n",run->pid);
+		printf("Ready: ");
+		printQueue(readyQueue);
+		printf("\n");
+	}else{
+		printf("Sched: P%d(Running -> Ready), P%d(Ready -> Running)\n",ran->pid,run->pid);
+		printf("Running: P%d\n",run->pid);
+		printf("Ready: ");
+		printQueue(readyQueue);
+		printf("\tp%d\n",ran->pid);
+	}
+}
+//change the running process
+void runAnother(struct Queue* freeQueue,struct Queue* readyQueue,struct Queue* runningQueue){
+	struct PCB* toRun = popFirst(readyQueue); 
+	struct PCB* ran = NULL;
+	bool time = isTimeEnough(runningQueue);
+	
+	printPCB(toRun);
+	if(isEmpty(readyQueue)&&isEmpty(runningQueue)){
+		printf("nothing to run");
+	}else if(isEmpty(readyQueue)&&isSingle(runningQueue)){
+		append(runningQueue,toRun);
+		printInfo(freeQueue,readyQueue,runningQueue);
+		ran = popFirst(runningQueue);
+		run(ran);
+		changeState(ran,running);
+		if(time == enough){
+			append(freeQueue,ran);
+		}else{
+			append(runningQueue,ran); 
+		}
+	}else {		
+		append(runningQueue,toRun);
+		printInfo(freeQueue,readyQueue,runningQueue);
+		if(!isSingle(runningQueue)){
+			ran = popFirst(runningQueue);
+			run(ran);
+			if(time == enough){
+				changeState(ran,free);
+				append(freeQueue,ran);
+			}else{
+				changeState(ran,ready);
+				append(readyQueue,ran); 
+			}
+		}
+	}
 }

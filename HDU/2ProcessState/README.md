@@ -8,7 +8,7 @@
 
 > 操作流程
 
-1. 输入进程数量以及每个进程需要的运行的时间,在`freeQueue`中生成节点
+1. 输入进程数量以及每个进程需要的运行的时间,在`freeQueue`中生成节点或取出节点
 2. 从`freeQueue`中取出节点，插入`readyQueue`来创建进程
 3. 随机地从`readyQueue`选择一个节点，插入`runningQueue`的队尾来进入运行状态
 4. 若`runningQueue`中有2个节点，则将第一个节点的剩余运行时间减2，若结果大于0，将其插入`readyQueue`队尾，若结果小于等于0，将其插入`freeQueue`队尾
@@ -21,8 +21,8 @@
 1. 定义一个`PCB`的结构体，包含各种程序运行的信息
 2. 定义一个`Queue`的结构体来管理各种队列，包含成员`phead` `ptail` `num`
 3. 为PCB编写各种操作函数，包括`run` `printPCB` `createPCB`
-4. 为`Queue`编写各种操作函数，包括`append` `isEmpty` `isSingle` `popFirst` `popRandom` `printQueue` `iniQueue`
-5. 编写`printInfo`来打印信息示例
+4. 为`Queue`编写各种操作函数，包括`append` `isEmpty` `isSingle` `popFirst` `popRandom` `printQueue` `iniQueue` `getRandomNum` `getFirst` `getLast`
+5. 编写`printInfo` `createProcess` `changeState`
 6. 按照操作流程的步骤调用已写好的函数完成程序
 
 
@@ -36,7 +36,7 @@
 srand(time(NULL));
 int r = rand();
 ```
- 这是我网上看到的随机数生成代码，直接可以生成随机数，但当我把他封装在函数里的时候，每次调用都会生成同样的数字。因此我就把每次生成的结果保留，作为下一次的种子，随机性比原来更好，但总感觉还是有待完善
+ 这是我网上看到的随机数生成代码，直接可以生成随机数，但当我把他封装在函数里的时候，每次调用都会生成同样的数字。因此我就把每次生成的结果保留，作为下一次的种子，随机性比原来更好。
  ```
  static int pre = 0;
 
@@ -45,6 +45,10 @@ int r = rand();
  else srand(pre);
  pre = rand();
  ```
+5. `runAnother`中的逻辑有待改善
+6. 一个很纠结的问题是，当`readyQueue`为空，`runnningQueue`中有一个元素时，我们如何去判断，那个节点是上次已经运行了的，还是新加入的。我的解决方案是，在`printInfo`之前，不要修改每个节点的`state`值，这样就可以用来帮助我们判断实际的情况。
+7. 声明了一个全局变量`cnt`来生成进程id，这有缺陷。
+8. append无法把running中的进程移到ready
 
 >体会
 
