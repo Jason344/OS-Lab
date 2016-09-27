@@ -250,24 +250,20 @@ void printInfo(struct Queue* freeQueue,struct Queue* readyQueue,struct Queue* ru
 			printf("run again\n");
 			printf("Sched: P%d(Running -> Running)\n",run->pid);
 		}
-		printf("Running: P%d\n",run->pid);
-		printf("Ready: ");
-		printQueue(readyQueue);
-		printf("\n");
-		
 	}else if(time == enough){
 		printf("Sched: P%d(Running -> Free), P%d(Ready -> Running)\n",ran->pid,run->pid);
-		printf("Running: P%d\n",run->pid);
-		printf("Ready: ");
-		printQueue(readyQueue);
-		printf("\n");
 	}else{
 		printf("Sched: P%d(Running -> Ready), P%d(Ready -> Running)\n",ran->pid,run->pid);
-		printf("Running: P%d\n",run->pid);
-		printf("Ready: ");
-		printQueue(readyQueue);
+		
+	}
+	printf("Running: P%d\n",run->pid);
+	printf("Ready: ");
+	printQueue(readyQueue);
+	if(time == lack){
 		printf("\tp%d\n",ran->pid);
 	}
+	printf("\n");
+		
 }
 //change the running process
 void runAnother(struct Queue* freeQueue,struct Queue* readyQueue,struct Queue* runningQueue){

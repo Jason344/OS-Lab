@@ -20,18 +20,16 @@
 
 1. 定义一个`PCB`的结构体，包含各种程序运行的信息
 2. 定义一个`Queue`的结构体来管理各种队列，包含成员`phead` `ptail` `num`
-3. 为PCB编写各种操作函数，包括`run` `printPCB` `createPCB`
+3. 为PCB编写各种操作函数，包括`run` `printPCB` `createPCB` `changeState` `changeId`
 4. 为`Queue`编写各种操作函数，包括`append` `isEmpty` `isSingle` `popFirst` `popRandom` `printQueue` `iniQueue` `getRandomNum` `getFirst` `getLast`
-5. 编写`printInfo` `createProcess` `changeState`
+5. 编写`printInfo` `createProcess` `changeState` `runAnother`
 6. 按照操作流程的步骤调用已写好的函数完成程序
 
 
 >问题说明
 
-1. 声明的结构体使用时忘加struct
-2. 混淆了==与=
-3. 指针的使用，本来不想向`isEmpty` `isSingle` `printQueue`传入指针的，因为这些函数没必要修改queue的内容，就没必要给他们指针；但这样想在  `popFirst`中调用这些函数就不太方便，因为`popFirst`中只有指针。还是都传指针进去好了，虽然可能导致可能的修改危险。
-4. rand函数的使用
+* 指针的使用，本来不想向`isEmpty` `isSingle` `printQueue`传入指针的，因为这些函数没必要修改queue的内容，就没必要给他们指针；但这样想在  `popFirst`中调用这些函数就不太方便，因为`popFirst`中只有指针。还是都传指针进去好了，虽然可能导致可能的修改危险。
+* rand函数的使用
 ```
 srand(time(NULL));
 int r = rand();
@@ -45,22 +43,22 @@ int r = rand();
  else srand(pre);
  pre = rand();
  ```
-5. `runAnother`中的逻辑有待改善
-6. 一个很纠结的问题是，当`readyQueue`为空，`runnningQueue`中有一个元素时，我们如何去判断，那个节点是上次已经运行了的，还是新加入的。我的解决方案是，在`printInfo`之前，不要修改每个节点的`state`值，这样就可以用来帮助我们判断实际的情况。
-7. 声明了一个全局变量`cnt`来生成进程id，这有缺陷。
-8. `popRandom`的时候，弹出最后一个元素时，忘了修改ptail的值，导致后来append节时，许多节点无故丢失，好几个小时才找出了这个bug，实在是不容易
+* `runAnother` `printInfo` 中逻辑较为复杂，不易与维护
+* 一个很纠结的问题是，当`readyQueue`为空，`runnningQueue`中有一个元素时，我们如何去判断，那个节点是上次已经运行了的，还是新加入的。我的解决方案是，在`printInfo`之前，不要修改每个节点的`state`值，这样就可以用来帮助我们判断实际的情况。
+* 声明了一个全局变量`cnt`来生成进程id，这有缺陷。
+* `popRandom`的时候，弹出最后一个元素时，忘了修改ptail的值，导致后来append节时，许多节点无故丢失，好几个小时才找出了这个bug，实在是不容易
 ```
 		if(p->pnext==NULL)
 			queue->ptail = p;
 ```
-9. 输出格式就不在意了，这个也不是关键
+
 >体会
 
-
+1. print函数提前写好有助调试
 
 > 查阅资料
 
-1. 下载了kernel 4.7.5,并找出task_structd的定义
+下载了kernel 4.7.5,并找出task_structd的定义
 ```
 struct task_struct {
 	u64 curr_chain_key;
@@ -72,4 +70,19 @@ struct task_struct {
 	char comm[17];
 };
 ```
-2.
+Linux中进程的状态
+* D	uninterruptible sleep (usually IO)
+* R	running or runnable (on run queue)
+* S	interruptible sleep (waiting for an event to complete)
+* T	stopped, either by a job control signal or because it is being traced
+* X	dead (should never be seen)
+* Z	defunct ("zombie") process, terminated but not reaped by its parent
+
+![state transform](http://www.ustudy.in/sites/default/files/images/Linux%20process%20state.png)
+
+
+
+Linux存储进程关系树
+* 显示的话，`pstree`既可
+* [Linux Programmer's Manual](http://man7.org/linux/man-pages/man5/proc.5.html)
+* proc文件系统是一种伪文件系统，每个进程都在proc目录中有一个对应的数字子目录，在每个进程的目录中有个mountinfo文件，可能存储了进程关系树。
