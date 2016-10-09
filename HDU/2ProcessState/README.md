@@ -86,3 +86,11 @@ Linux存储进程关系树
 * 显示的话，`pstree`既可
 * [Linux Programmer's Manual](http://man7.org/linux/man-pages/man5/proc.5.html)
 * proc文件系统是一种伪文件系统，每个进程都在proc目录中有一个对应的数字子目录，在每个进程的目录中有个mountinfo文件，可能存储了进程关系树。
+
+
+> 针对老师意见的修改
+
+1. 那个纠结的问题当然处理了，我只是记录一下思考的过程。
+2. 已修改
+3. getFirst函数已写到函数中
+4. isEmpty和isSingle使用频率相当高，写成函数也可以增加可读性吧。

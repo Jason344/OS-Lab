@@ -33,24 +33,23 @@ void printQueue(struct Queue*);
 void iniQueue(struct Queue*);
 bool isEmpty(struct Queue*);
 bool isSingle(struct Queue*);
-struct PCB* getFirst(struct Queue*);
-struct PCB* getLast(struct Queue*);
 struct PCB* popFirst(struct Queue*);
 struct PCB* popRandom(struct Queue*);
 int getRandomNum();
 void createProcess(struct Queue*,struct Queue*,int time);
 void printInfo(struct Queue*,struct Queue*,struct Queue*);
 bool isTimeEnough(struct Queue*);
-void runAnother(struct Queue*,struct Queue*,struct Queue*);
+void schedule(struct Queue*,struct Queue*,struct Queue*);
 int cnt = 0;
 int main(){
 	struct Queue freeQueue,readyQueue,runningQueue;
 	struct PCB* p;
-	int i;
+	int i,n,required;
 	
 	iniQueue(&freeQueue);
 	iniQueue(&readyQueue);
 	iniQueue(&runningQueue);
+
 	createProcess(&freeQueue,&readyQueue,10);
 	createProcess(&freeQueue,&readyQueue,20);
 	createProcess(&freeQueue,&readyQueue,20);
@@ -59,10 +58,19 @@ int main(){
 	createProcess(&freeQueue,&readyQueue,43);
 	createProcess(&freeQueue,&readyQueue,14);
 	createProcess(&freeQueue,&readyQueue,26);
-	
+
+/*
+	printf("How many process do you want to create?");
+	scanf("%d",&n);
+	for(i=0;i<n;i++){
+		printf("Required time for process %d:",i);
+		scanf("%d",&required);
+		createProcess(&freeQueue,&readyQueue,required);
+	}
+*/ 
 	while(!isEmpty(&runningQueue)||!isEmpty(&readyQueue)){
 		printf("*******************\n");
-		runAnother(&freeQueue,&readyQueue,&runningQueue);
+		schedule(&freeQueue,&readyQueue,&runningQueue);
 /* 
 		printf("\n\nfree:");
 		printQueue(&freeQueue);
@@ -71,7 +79,7 @@ int main(){
 		printf("\nrunning:");
 		printQueue(&runningQueue);
 		printf("\n\n");
-		*/
+*/
 		printf("*******************\n");
 	}
 }
@@ -156,14 +164,6 @@ bool isSingle(struct Queue* queue){
 		return true;
 	else return false;
 }
-//get the first element of the queue without delete it
-struct PCB* getFirst(struct Queue* queue){
-	return queue->phead;
-}
-//get the last element of the queue without delete it
-struct PCB* getLast(struct Queue* queue){
-	return queue->ptail;
-}
 //pop the first element of the queue
 struct PCB* popFirst(struct Queue* queue){
 	struct PCB* result = NULL;
@@ -229,7 +229,7 @@ void createProcess(struct Queue* freeQueue,struct Queue* readyQueue,int time){
 }
 //figure out whether the time is enough
 bool isTimeEnough(struct Queue* runnningQueue){
-	struct PCB* ran = getFirst(runnningQueue);
+	struct PCB* ran = runnningQueue->phead;
 	
 	if(ran!=NULL){
 		if(ran->ptime-2>0){
@@ -239,8 +239,8 @@ bool isTimeEnough(struct Queue* runnningQueue){
 }
 //print infomation when runningQueue have two element
 void printInfo(struct Queue* freeQueue,struct Queue* readyQueue,struct Queue* runningQueue){
-	struct PCB* ran = getFirst(runningQueue);
-	struct PCB* run = getLast(runningQueue);
+	struct PCB* ran = runnningQueue->phead;
+	struct PCB* run = runnningQueue->ptail;
 	bool time = isTimeEnough(runningQueue);
 	if(isSingle(runningQueue)){
 		if(ran->pstate == ready){
@@ -266,7 +266,7 @@ void printInfo(struct Queue* freeQueue,struct Queue* readyQueue,struct Queue* ru
 		
 }
 //change the running process
-void runAnother(struct Queue* freeQueue,struct Queue* readyQueue,struct Queue* runningQueue){
+void schedule(struct Queue* freeQueue,struct Queue* readyQueue,struct Queue* runningQueue){
 	struct PCB* toRun = popRandom(readyQueue); 
 	struct PCB* ran = NULL;
 	bool time = isTimeEnough(runningQueue);
